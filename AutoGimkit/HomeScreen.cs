@@ -5,9 +5,6 @@
         private Form1 hostForm;
         private string speedMultiText = "Speed Multi: 1=normal 2=twice as slow";
 
-        private int myMin = 0;
-        private int myMax = 0;
-
         public HomeScreen(Form1 hostForm)
         {
             InitializeComponent();
@@ -25,46 +22,15 @@
             UpdateSpeedText(value);
         }
 
-        public void UpdateMinAndMax(int min, int max)
+        public void UpdateMaxMistakes(int max)
         {
-            if (CheckMinAndMax(min, max))
-            {
-                Program.dataSaving?.SetIncorrectMin(myMin);
-                Program.dataSaving?.SetIncorrectMax(myMax);
-            }
-            UpdateMinAndMaxLabels();
-        }
-
-        private bool CheckMinAndMax(int newMin, int newMax)
-        {
-            newMin = Math.Max(0, newMin);
-
-            if (newMin > newMax)
-                newMin = 0;
-            if (newMax < newMin)
-                newMax = 0;
-
-            bool didMinChange = myMin != newMin;
-            bool didMaxChange = myMax != newMax;
-
-            myMin = newMin;
-            myMax = newMax;
-
-            return didMinChange || didMaxChange;
-        }
-
-        private void UpdateMinAndMaxLabels()
-        {
-            minTextBox.Text = myMin.ToString();
-            maxTextBox.Text = myMax.ToString();
+            maxTextBox.Text = max.ToString();
         }
 
         private void UpdateSpeedText(float currentValue)
         {
             speedMultiLabel.Text = $"{speedMultiText} ({currentValue})";
         }
-
-
 
         public float CalculateCurrentSpeedMulti() => speedMultiplayerTrack.Value / 10f;
 
@@ -91,26 +57,18 @@
             UpdateSpeedText(currentValue);
         }
 
-        private void minTextBox_TextChanged(object sender, EventArgs e)
-        {
-            int min;
-            bool success = int.TryParse(minTextBox.Text, out min);
-            if (!success)
-                min = 0;
-
-
-            UpdateMinAndMax(min, myMax);
-        }
-
         private void maxTextBox_TextChanged(object sender, EventArgs e)
         {
             int max;
             bool success = int.TryParse(maxTextBox.Text, out max);
             if (!success)
-                max = myMin;
+                max = 0;
 
+            max = Math.Max(0, Math.Min(max, 100));
 
-            UpdateMinAndMax(myMin, max);
+            Program.dataSaving?.SetIncorrectMax(max);
+
+            maxTextBox.Text = max.ToString();
         }
     }
 }

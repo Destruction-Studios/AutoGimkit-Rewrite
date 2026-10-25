@@ -39,7 +39,7 @@
             // currentLatin
             // 
             currentLatin.AutoSize = true;
-            currentLatin.Location = new Point(15, 28);
+            currentLatin.Location = new Point(15, 32);
             currentLatin.Name = "currentLatin";
             currentLatin.Size = new Size(218, 32);
             currentLatin.TabIndex = 0;
@@ -48,7 +48,7 @@
             // tableLookup
             // 
             tableLookup.AutoSize = true;
-            tableLookup.Location = new Point(15, 84);
+            tableLookup.Location = new Point(15, 107);
             tableLookup.Name = "tableLookup";
             tableLookup.Size = new Size(249, 32);
             tableLookup.TabIndex = 1;
@@ -88,7 +88,7 @@
             // mistakesLabel
             // 
             mistakesLabel.AutoSize = true;
-            mistakesLabel.Location = new Point(15, 189);
+            mistakesLabel.Location = new Point(15, 206);
             mistakesLabel.Name = "mistakesLabel";
             mistakesLabel.Size = new Size(272, 32);
             mistakesLabel.TabIndex = 5;

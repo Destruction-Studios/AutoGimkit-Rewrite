@@ -34,10 +34,7 @@
             speedMultiLabel = new Label();
             speedMultiplayerTrack = new TrackBar();
             minMaxLabel = new Label();
-            minTextBox = new TextBox();
             maxTextBox = new TextBox();
-            minlabel = new Label();
-            maxLabel = new Label();
             ((System.ComponentModel.ISupportInitialize)speedMultiplayerTrack).BeginInit();
             SuspendLayout();
             // 
@@ -74,15 +71,15 @@
             speedMultiLabel.AutoSize = true;
             speedMultiLabel.Location = new Point(28, 116);
             speedMultiLabel.Name = "speedMultiLabel";
-            speedMultiLabel.Size = new Size(568, 32);
+            speedMultiLabel.Size = new Size(671, 32);
             speedMultiLabel.TabIndex = 3;
-            speedMultiLabel.Text = "Speed Multi: 1=normal 2=twice as slow (current val)";
+            speedMultiLabel.Text = "Negative Speed Multi: 1=normal 2=twice as slow (current val)";
             // 
             // speedMultiplayerTrack
             // 
             speedMultiplayerTrack.LargeChange = 1;
             speedMultiplayerTrack.Location = new Point(28, 166);
-            speedMultiplayerTrack.Maximum = 50;
+            speedMultiplayerTrack.Maximum = 100;
             speedMultiplayerTrack.Minimum = 10;
             speedMultiplayerTrack.Name = "speedMultiplayerTrack";
             speedMultiplayerTrack.Size = new Size(720, 90);
@@ -93,54 +90,25 @@
             // minMaxLabel
             // 
             minMaxLabel.AutoSize = true;
-            minMaxLabel.Location = new Point(12, 224);
+            minMaxLabel.Location = new Point(27, 224);
             minMaxLabel.Name = "minMaxLabel";
-            minMaxLabel.Size = new Size(746, 32);
+            minMaxLabel.Size = new Size(643, 32);
             minMaxLabel.TabIndex = 5;
-            minMaxLabel.Text = "The min and max answers the program will automattically get wrong";
-            // 
-            // minTextBox
-            // 
-            minTextBox.Location = new Point(104, 276);
-            minTextBox.Name = "minTextBox";
-            minTextBox.Size = new Size(200, 39);
-            minTextBox.TabIndex = 6;
-            minTextBox.TextChanged += minTextBox_TextChanged;
+            minMaxLabel.Text = "The max answers the program will automatically get wrong";
             // 
             // maxTextBox
             // 
-            maxTextBox.Location = new Point(454, 276);
+            maxTextBox.Location = new Point(28, 276);
             maxTextBox.Name = "maxTextBox";
             maxTextBox.Size = new Size(200, 39);
             maxTextBox.TabIndex = 7;
             maxTextBox.TextChanged += maxTextBox_TextChanged;
             // 
-            // minlabel
-            // 
-            minlabel.AutoSize = true;
-            minlabel.Location = new Point(28, 279);
-            minlabel.Name = "minlabel";
-            minlabel.Size = new Size(61, 32);
-            minlabel.TabIndex = 8;
-            minlabel.Text = "Min:";
-            // 
-            // maxLabel
-            // 
-            maxLabel.AutoSize = true;
-            maxLabel.Location = new Point(370, 279);
-            maxLabel.Name = "maxLabel";
-            maxLabel.Size = new Size(64, 32);
-            maxLabel.TabIndex = 9;
-            maxLabel.Text = "Max:";
-            // 
             // HomeScreen
             // 
             AutoScaleDimensions = new SizeF(13F, 32F);
             AutoScaleMode = AutoScaleMode.Font;
-            Controls.Add(maxLabel);
-            Controls.Add(minlabel);
             Controls.Add(maxTextBox);
-            Controls.Add(minTextBox);
             Controls.Add(minMaxLabel);
             Controls.Add(speedMultiplayerTrack);
             Controls.Add(speedMultiLabel);
@@ -162,9 +130,6 @@
         private Label speedMultiLabel;
         private TrackBar speedMultiplayerTrack;
         private Label minMaxLabel;
-        private TextBox minTextBox;
         private TextBox maxTextBox;
-        private Label minlabel;
-        private Label maxLabel;
     }
 }

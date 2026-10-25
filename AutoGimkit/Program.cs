@@ -39,12 +39,19 @@ namespace AutoGimkit
             //Sync UI with data
             form.homeScreen.SetGimkitIdText(dataSaving.GetGimkitId());
             form.homeScreen.SetSpeedMultiplierValue(dataSaving.GetSpeedMultiplier());
-            form.homeScreen.UpdateMinAndMax(dataSaving.GetIncorrectMin(), dataSaving.GetIncorrectMax());
+            form.homeScreen.UpdateMaxMistakes(dataSaving.GetIncorrectMax());
 
             Application.Run(form);
 
+            SaveIfNotDirty();
+        }
+
+        private static void SaveIfNotDirty()
+        {
             if (dataSaving != null && dataSaving.IsDirty())
+            {
                 dataSaving.WriteData();
+            }
         }
 
         public static async Task OpenChrome()
@@ -60,21 +67,23 @@ namespace AutoGimkit
 
         public static async Task StartProgram()
         {
+            SaveIfNotDirty();
+
             int totalRandomMistakes = 0;
-            int currentRandomMistakes = 0;
+
             DataSaving? ds = dataSaving;
             if (ds != null)
             {
-                totalRandomMistakes = Random.Shared.Next(ds.GetIncorrectMin(), ds.GetIncorrectMax() + 1);
+                totalRandomMistakes = ds.GetIncorrectMax();
             }
-            form?.mainScreen.UpdateMistakesText(currentRandomMistakes, totalRandomMistakes);
+            form?.mainScreen.UpdateMistakesText(0, totalRandomMistakes);
 
             if (cts != null)
                 return;
             cts = new CancellationTokenSource();
             try
             {
-                await RunLoopAsync(cts.Token);
+                await RunLoopAsync(cts.Token, totalRandomMistakes);
             }
             catch (OperationCanceledException)
             {
@@ -89,17 +98,34 @@ namespace AutoGimkit
             await Task.CompletedTask;
         }
 
-        private static async Task RunLoopAsync(CancellationToken token)
+        private static async Task Delay(int ms, float multi, CancellationToken token, float influence = 1.0f)
         {
+
+            await Task.Delay((int)(ms * multi * influence), token);
+        }
+        private static async Task RunLoopAsync(CancellationToken token, int totalMistakes)
+        {
+            int currentMistakes = 0;
+            float speedMulti = 1.0f;
+
+            DataSaving? ds = Program.dataSaving;
+            if (ds != null)
+            {
+                speedMulti = ds.GetSpeedMultiplier();
+            }
+
+            Debug.WriteLine($"Starting program with speed multi {speedMulti}");
+
             while (!token.IsCancellationRequested)
             {
                 try
                 {
                     if (page == null)
                     {
-                        await Task.Delay(50, token);
+                        await Delay(50, speedMulti, token);
                         continue;
                     }
+
                     string lastClickedAtStart = lastClickedAnswer;
 
                     //Main loops
@@ -107,7 +133,7 @@ namespace AutoGimkit
 
                     if (latinWord == lastHandledWord)
                     {
-                        await Task.Delay(50, token);
+                        await Delay(50, speedMulti, token);
                         continue;
                     }
                     lastHandledWord = latinWord;
@@ -125,11 +151,12 @@ namespace AutoGimkit
                         form?.mainScreen.SetCurrentDef("Click the correct answer");
                         while (lastClickedAnswer == lastClickedAtStart)
                         {
-                            await Task.Delay(30, token);
+                            //Dont need speedMulti here
+                            await Delay(30, 1, token);
                         }
                         Debug.WriteLine($"Got correct Answer: {lastClickedAnswer}");
                         wordDb?.Add(latinWord, lastClickedAnswer);
-                        await Task.Delay(100, token);
+                        await Delay(100, speedMulti, token);
                         continue;
                     }
                     //found word in database
@@ -138,7 +165,12 @@ namespace AutoGimkit
                     string target = key.English.Trim().ToLowerInvariant();
                     ILocator answers = page.Locator("div.sc-ixcdjX.kLONFv");
 
-                    bool shouldBeWrong = true;
+
+                    float chance = .1f + (currentMistakes / totalMistakes) * .5f;
+
+                    bool shouldBeWrong = (currentMistakes < totalMistakes && Random.Shared.NextSingle() < chance);
+
+                    Debug.WriteLine($"Should be wrong {shouldBeWrong}");
 
                     int index;
                     index = await answers.EvaluateAllAsync<int>(@"
@@ -150,42 +182,110 @@ namespace AutoGimkit
 
                     if (index < 0)
                     {
-                        await Task.Delay(50, token);
+                        //Does not need speedMulti
+                        await Delay(50, 1, token);
                         continue;
                     }
 
-                    //if (shouldBeWrong)
-                    //{
-                    //    index = index == 3 ? 0 : index + 1;
-                    //}
+                    if (shouldBeWrong)
+                    {
+                        index += 1;
+                        if (index > 3)
+                        {
+                            index = 0;
+                        }
+                    }
 
-                    Debug.WriteLine(index);
 
                     ILocator answer = answers.Nth(index);
                     string t = await answer.InnerTextAsync();
-                    Debug.WriteLine($"Found: {t}");
 
                     answer?.ClickAsync();
 
+
+                    if (shouldBeWrong)
+                    {
+                        currentMistakes++;
+                        form?.mainScreen.UpdateMistakesText(currentMistakes, totalMistakes);
+                    }
+
                     //Wait to click continue
-                    await Task.Delay(18, token);
 
-                    await page.Locator("div.sc-eEHciv.hkdshG").ClickAsync();
 
+                    //Does not work immediatly
+                    //bool isIncorrect = await page.Locator(".sc-fcSHUR.dFnPXq").CountAsync() > 0;
+
+                    //do not add influence 
+                    await Delay(300, speedMulti, token);
+
+                    ILocator bg = page.Locator(".sc-iVnIWt.gOiICl.maxAll");
+
+                    bool foundBg = true;
+
+                    try
+                    {
+                        await bg.WaitForAsync(new() { Timeout = 100 });
+                    }
+                    catch (TimeoutException)
+                    {
+                        //nothing
+                        foundBg = false;
+                    }
+
+                    int count = await bg.CountAsync();
+                    Debug.WriteLine($"count: {count}, found: {foundBg}");
+
+
+
+                    // OLD LOGIC OF CALCULATING BACKGROUND COLOR
+                    // BACKGROUND DOES NOT EXIST UNLESS ANSWER IS WRONG
+                    //string color = await bg.EvaluateAsync<string>("e => getComputedStyle(e).backgroundColor");
+                    //Debug.WriteLine($"Color: {color}"); //{color[0]}");
+
+                    //string[] parts = color
+                    //.Replace("rgba(", "")
+                    //.Replace(")", "")
+                    //.Split(',');
+
+                    //int r = int.Parse(parts[0].Trim());
+                    //int g = int.Parse(parts[1].Trim());
+                    //int b = int.Parse(parts[2].Trim());
+
+                    bool isIncorrect = foundBg;
+
+                    //if (r > g && r > b)
+                    //{
+                    //    isIncorrect = true;
+                    //}
+
+                    Debug.WriteLine($"Is incorrect: {isIncorrect}");
+                    if (isIncorrect)
+                    {
+                        await Delay(4000, speedMulti, token, .4f);
+                        Debug.WriteLine("Pressing continue");
+                        ILocator continueButton = page.Locator(".sc-erPUmh.fUXOFu.maxAll .sc-goiVcJ.hKIzUO");
+                        await continueButton.ClickAsync();
+                        Debug.WriteLine("Clicked");
+                    }
+                    else
+                    {
+                        await Delay(18, speedMulti, token);
+                        Debug.WriteLine("Pressing continue");
+                        await page.Locator("div.sc-eEHciv.hkdshG").ClickAsync();
+                    }
                 }
                 catch (PlaywrightException e)
                 {
                     Debug.WriteLine(e.Message);
                 }
 
-                await Task.Delay(10, token);
+                await Delay(10, speedMulti, token);
             }
         }
 
         private static void OnAnswerClicked(string text)
         {
             lastClickedAnswer = text;
-            Debug.WriteLine($"CLcked: {text}");
         }
 
         public static void StopProgram() => cts?.Cancel();
