@@ -26,7 +26,6 @@ namespace AutoGimkit
         [STAThread]
         static void Main()
         {
-
             dataSaving = new DataSaving(SAVE_FILE);
             dataSaving.LoadData();
 
@@ -44,6 +43,19 @@ namespace AutoGimkit
             form.homeScreen.SetGimkitIdText(dataSaving.GetGimkitId());
             form.homeScreen.SetSpeedMultiplierValue(dataSaving.GetSpeedMultiplier());
             form.homeScreen.UpdateMaxMistakes(dataSaving.GetIncorrectMax());
+
+            Task.Run(async () =>
+            {
+                var (success, currentVersion, appVersion) = await UpdateChecker.CheckForUpdate();
+                if (success && currentVersion != null && appVersion != null)
+                {
+                    Debug.WriteLine("Update Avail!");
+                    form.BeginInvoke(() =>
+                    {
+                        new UpdateAvailibleForm(currentVersion, appVersion).ShowDialog();
+                    });
+                }
+            });
 
             Application.Run(form);
 
