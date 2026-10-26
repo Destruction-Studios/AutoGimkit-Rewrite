@@ -312,7 +312,7 @@ namespace AutoGimkit
                     Debug.WriteLine($"Is incorrect: {isIncorrect}");
                     if (isIncorrect)
                     {
-                        await Delay(4000, speedMulti, token, .4f);
+                        await Delay(3000 + (int)(1000 * speedMulti), 1, token);
                         Debug.WriteLine("Pressing continue");
                         ILocator continueButton = page.Locator(".sc-erPUmh.fUXOFu.maxAll .sc-goiVcJ.hKIzUO");
                         await continueButton.ClickAsync();
