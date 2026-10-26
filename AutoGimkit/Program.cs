@@ -18,6 +18,8 @@ namespace AutoGimkit
         private static IBrowserContext? context;
         private static IPage? page;
 
+        private static int currentMistakes;
+
         private static string lastClickedAnswer = string.Empty;
         private static string lastHandledWord = string.Empty;
 
@@ -98,7 +100,7 @@ namespace AutoGimkit
                     wordDb.LoadFromPastebin(r);
 
                 return false;
-            }     
+            }
             else
                 await Task.CompletedTask;
 
@@ -127,7 +129,7 @@ namespace AutoGimkit
             {
                 totalRandomMistakes = ds.GetIncorrectMax();
             }
-            form?.mainScreen.UpdateMistakesText(0, totalRandomMistakes);
+            form?.mainScreen.UpdateMistakesText(currentMistakes, totalRandomMistakes);
 
             if (cts != null)
                 return;
@@ -156,7 +158,6 @@ namespace AutoGimkit
         }
         private static async Task RunLoopAsync(CancellationToken token, int totalMistakes)
         {
-            int currentMistakes = 0;
             float speedMulti = 1.0f;
 
             DataSaving? ds = Program.dataSaving;
@@ -312,11 +313,30 @@ namespace AutoGimkit
                     Debug.WriteLine($"Is incorrect: {isIncorrect}");
                     if (isIncorrect)
                     {
-                        await Delay(3000 + (int)(1000 * speedMulti), 1, token);
+                        //await Delay(4000 + (int)(100 * speedMulti), 1, token);
                         Debug.WriteLine("Pressing continue");
-                        ILocator continueButton = page.Locator(".sc-erPUmh.fUXOFu.maxAll .sc-goiVcJ.hKIzUO");
-                        await continueButton.ClickAsync();
-                        Debug.WriteLine("Clicked");
+                        //ILocator continueButton = page.Locator(".sc-erPUmh.fUXOFu.maxAll .sc-goiVcJ.hKIzUO");
+                        ILocator continueButton = page.Locator(".sc-jVxTAy.IqIya.maxAll");
+                        ILocator mouseStatus = continueButton.Locator("div").First;
+
+                        while (true)
+                        {
+                            string cursor = await mouseStatus.EvaluateAsync<string>("el => getComputedStyle(el).cursor");
+
+                            if (cursor != "not-allowed")
+                            {
+                                Debug.WriteLine("Cursor changed, clicking");
+                                await continueButton.ClickAsync();
+                                break;
+                            }
+
+                            //Debug.WriteLine("Failed, trying again");
+                            await Delay(50, speedMulti, token);
+
+
+                            if (token.IsCancellationRequested)
+                                break;
+                        }
                     }
                     else
                     {

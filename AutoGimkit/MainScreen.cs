@@ -14,7 +14,6 @@ namespace AutoGimkit
     public partial class MainScreen : UserControl
     {
         private Form1 hostForm;
-        private string currentLatinOrig = "Current latin";
 
         public MainScreen(Form1 hostForm)
         {
