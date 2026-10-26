@@ -7,7 +7,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationIcon>assets\favicon.ico</ApplicationIcon>
-
+	  
   </PropertyGroup>
 
   <ItemGroup>

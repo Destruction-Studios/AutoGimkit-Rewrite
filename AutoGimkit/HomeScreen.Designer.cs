@@ -35,6 +35,8 @@
             speedMultiplayerTrack = new TrackBar();
             minMaxLabel = new Label();
             maxTextBox = new TextBox();
+            downloadButton = new Button();
+            label1 = new Label();
             ((System.ComponentModel.ISupportInitialize)speedMultiplayerTrack).BeginInit();
             SuspendLayout();
             // 
@@ -71,9 +73,9 @@
             speedMultiLabel.AutoSize = true;
             speedMultiLabel.Location = new Point(28, 116);
             speedMultiLabel.Name = "speedMultiLabel";
-            speedMultiLabel.Size = new Size(671, 32);
+            speedMultiLabel.Size = new Size(651, 32);
             speedMultiLabel.TabIndex = 3;
-            speedMultiLabel.Text = "Negative Speed Multi: 1=normal 2=twice as slow (current val)";
+            speedMultiLabel.Text = "Negative Speed Multi: higher values equals slower program";
             // 
             // speedMultiplayerTrack
             // 
@@ -104,10 +106,32 @@
             maxTextBox.TabIndex = 7;
             maxTextBox.TextChanged += maxTextBox_TextChanged;
             // 
+            // downloadButton
+            // 
+            downloadButton.Cursor = Cursors.Hand;
+            downloadButton.Location = new Point(400, 349);
+            downloadButton.Name = "downloadButton";
+            downloadButton.Size = new Size(348, 46);
+            downloadButton.TabIndex = 8;
+            downloadButton.Text = "Download Words";
+            downloadButton.UseVisualStyleBackColor = true;
+            downloadButton.Click += downloadButton_Click;
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Location = new Point(400, 283);
+            label1.Name = "label1";
+            label1.Size = new Size(332, 32);
+            label1.TabIndex = 9;
+            label1.Text = "Download latest Gimkit words";
+            // 
             // HomeScreen
             // 
             AutoScaleDimensions = new SizeF(13F, 32F);
             AutoScaleMode = AutoScaleMode.Font;
+            Controls.Add(label1);
+            Controls.Add(downloadButton);
             Controls.Add(maxTextBox);
             Controls.Add(minMaxLabel);
             Controls.Add(speedMultiplayerTrack);
@@ -131,5 +155,7 @@
         private TrackBar speedMultiplayerTrack;
         private Label minMaxLabel;
         private TextBox maxTextBox;
+        private Button downloadButton;
+        private Label label1;
     }
 }

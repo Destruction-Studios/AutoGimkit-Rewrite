@@ -88,6 +88,28 @@ namespace AutoGimkit
             return new();
         }
 
+        public void LoadFromPastebin(string rawJson)
+        {
+            Debug.WriteLine("Parsing raw json");
+            Dictionary<string, WordEntry>? newWords = null;
+            try
+            {
+                var raw = JsonSerializer.Deserialize<Dictionary<string, WordEntry>>(rawJson, JsonOptions);
+                if (raw != null)
+                    newWords = raw;
+            } catch (JsonException ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
+
+            if (newWords != null)
+            {
+                _words = newWords;
+                Debug.WriteLine("Successfully wrote new lines");
+                Changed();
+            }
+        }
+
         private void Changed()
         {
             lock (_lock)
@@ -147,6 +169,8 @@ namespace AutoGimkit
                 _dirty = false;
             }
         }
+
+        
 
         /// <summary>Save only if there are unsaved changes.</summary>
         public void Flush()

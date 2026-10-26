@@ -7,6 +7,7 @@ namespace AutoGimkit
     {
         public static bool isRunning = false;
         private static CancellationTokenSource? cts;
+        private static bool browserChecked;
 
         public const string SAVE_FILE = "data.json";
         public static DataSaving? dataSaving { get; private set; }
@@ -23,6 +24,7 @@ namespace AutoGimkit
         [STAThread]
         static void Main()
         {
+
             dataSaving = new DataSaving(SAVE_FILE);
             dataSaving.LoadData();
 
@@ -46,12 +48,61 @@ namespace AutoGimkit
             SaveIfNotDirty();
         }
 
+        public static async Task EnsureBrowserInstalled()
+        {
+            if (browserChecked) return;
+
+            // fully qualified, because your own class is also called Program
+            Task<int> install = Task.Run(() =>
+                Microsoft.Playwright.Program.Main(new[] { "install", "chromium" }));
+
+            // still running after 400 ms means it's really downloading
+            if (await Task.WhenAny(install, Task.Delay(400)) != install && form != null)
+            {
+                using var loading = new LoadingForm(
+                    "Downloading the browser (first run only).\nThis can take a minute...");
+
+                form.Enabled = false;   // stop clicks on the main window meanwhile
+                loading.Show(form);
+                try
+                {
+                    await install;
+                }
+                finally
+                {
+                    form.Enabled = true;
+                    loading.Close();
+                }
+            }
+
+            int exitCode = await install;
+            if (exitCode != 0)
+                throw new Exception($"Browser install failed (exit code {exitCode}). Check your internet connection.");
+
+            browserChecked = true;
+        }
         private static void SaveIfNotDirty()
         {
             if (dataSaving != null && dataSaving.IsDirty())
             {
                 dataSaving.WriteData();
             }
+        }
+
+        public static async Task<bool> AttemptDownload()
+        {
+            if (wordDb != null)
+            {
+                var (s, r) = await WordDownloader.GetRawJson();
+                if (s == true && r != null)
+                    wordDb.LoadFromPastebin(r);
+
+                return false;
+            }     
+            else
+                await Task.CompletedTask;
+
+            return false;
         }
 
         public static async Task OpenChrome()
@@ -307,6 +358,7 @@ namespace AutoGimkit
                 "BrowserProfile"
                 );
 
+            await EnsureBrowserInstalled();
             playwright = await Playwright.CreateAsync();
             context = await playwright.Chromium.LaunchPersistentContextAsync(profileDir, new()
             {

@@ -1,9 +1,11 @@
-﻿namespace AutoGimkit
+﻿using System.Threading.Tasks;
+
+namespace AutoGimkit
 {
     public partial class HomeScreen : UserControl
     {
         private Form1 hostForm;
-        private string speedMultiText = "Speed Multi: 1=normal 2=twice as slow";
+        private string speedMultiText = "Negative Speed Multi: higher values equals slower program";
 
         public HomeScreen(Form1 hostForm)
         {
@@ -41,6 +43,19 @@
             hostForm.ShowMain();
 
             await Program.OpenChrome();
+        }
+
+        private async void downloadButton_Click(object sender, EventArgs e)
+        {
+            downloadButton.Enabled = false;
+            downloadButton.Cursor = Cursors.WaitCursor;
+            bool success = await Program.AttemptDownload();
+            downloadButton.Cursor = Cursors.Default;
+
+            if (!success)
+            {
+                downloadButton.Enabled = true;
+            }
         }
 
         private void gimkitIdTextbox_TextChanged(object sender, EventArgs e)
